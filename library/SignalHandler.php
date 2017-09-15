@@ -10,7 +10,7 @@ class SignalHandler
     private $signals = array("SIGHUP" => SIGHUP, "SIGINT" => SIGINT, "SIGTERM" => SIGTERM, "SIGCHLD" => SIGCHLD);
     /** @var array $signalQueue */
     public $signalQueue = array();
-    /** @var \WorkerDaemon $workerDaemon */
+    /** @var WorkerDaemon $workerDaemon */
     private $workerDaemon;
 
     /**
@@ -26,33 +26,25 @@ class SignalHandler
     }
 
     /**
-     * @param int      $signal
-     * @param null|int $pid
-     * @param string   $status
+     * @param int         $signal
+     * @param null|int    $pid
+     * @param null|string $status
      *
      * @throws SignalHandlerException
      */
     public function handle($signal, $pid = null, $status = null)
     {
-        try {
-            $callbackName = $this->normalizeSignal($signal) . "Callback";
-            if (method_exists($this, $callbackName)) {
-                $this->$callbackName($pid, $status);
-            } else {
-                $this->DefaultCallback();
-            }
-        } catch (\Exception $e) {
-            throw new SignalHandlerException($e->getMessage(), $e->getCode());
+        switch ($signal) {
+            case SIGCHLD:
+                $this->sigchldCallback($pid, $status);
+                break;
+            default:
+                $this->workerDaemon->terminateJob();
+                break;
         }
     }
 
-    private function DefaultCallback()
-    {
-        $this->workerDaemon->jobInProgress = false;
-        $this->workerDaemon->terminateJob();
-    }
-
-    private function SigchldCallback($pid = null, $status = null)
+    private function sigchldCallback($pid = null, $status = null)
     {
         if (is_null($pid)) {
             $pid = pcntl_waitpid(-1, $status, WNOHANG);
@@ -65,23 +57,6 @@ class SignalHandler
             }
             $pid = pcntl_waitpid(-1, $status, WNOHANG);
         }
-    }
-
-    /**
-     * @param int|string $signal
-     *
-     * @return string
-     * @throws SignalHandlerException
-     */
-    private function normalizeSignal($signal)
-    {
-        if (($key = array_search($signal, $this->signals)) !== false) {
-            return ucfirst(strtolower($key));
-        } elseif (array_key_exists($signal, $this->signals)) {
-            return ucfirst(strtolower($signal));
-        }
-
-        throw new SignalHandlerException("Unable to normalize signal - not recognized: {$signal}");
     }
 
     /**

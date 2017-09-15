@@ -54,6 +54,7 @@ class WorkerDaemon
     public function terminateJob()
     {
         if ($this->daemonPid == getmypid()) {
+            $this->jobInProgress = false;
             foreach ($this->currentWorkers as $id => $pid) {
                 posix_kill($pid, SIGTERM);
                 pcntl_waitpid($pid, $status);
