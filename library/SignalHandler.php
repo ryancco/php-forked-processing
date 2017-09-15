@@ -7,7 +7,7 @@ use ryancco\forker\Exceptions\SignalHandlerException;
 class SignalHandler
 {
     /** @var array $signals */
-    private $signals = array("SIGCHLD" => SIGCHLD, "SIGINT" => SIGINT);
+    private $signals = array("SIGCHLD" => SIGCHLD, "SIGINT" => SIGINT, "SIGTERM" => SIGTERM);
     /** @var array $signalQueue */
     public $signalQueue = array();
     /** @var WorkerDaemon $workerDaemon */

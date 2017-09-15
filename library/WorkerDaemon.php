@@ -53,13 +53,16 @@ class WorkerDaemon
 
     public function terminateJob()
     {
-        $this->jobInProgress = false;
+        if ($this->daemonPid === getmypid()) {
+            $this->jobInProgress = false;
 
-        foreach ($this->currentWorkers as $pid) {
-            posix_kill($pid, SIGTERM);
-            pcntl_waitpid($pid, $status);
-            pcntl_wexitstatus($status);
+            foreach ($this->currentWorkers as $pid) {
+                posix_kill($pid, SIGTERM);
+                pcntl_waitpid($pid, $status);
+                pcntl_wexitstatus($status);
+            }
         }
+        exit(0);
     }
 
     /**
@@ -80,6 +83,7 @@ class WorkerDaemon
                 break;
             case 0:
                 $job();
+                $this->terminateJob();
                 break;
             default:
                 $this->currentWorkers[] = $pid;
