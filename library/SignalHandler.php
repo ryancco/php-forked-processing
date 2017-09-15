@@ -7,7 +7,7 @@ use ryancco\forker\Exceptions\SignalHandlerException;
 class SignalHandler
 {
     /** @var array $signals */
-    private $signals = array("SIGHUP" => SIGHUP, "SIGINT" => SIGINT, "SIGTERM" => SIGTERM, "SIGCHLD" => SIGCHLD);
+    private $signals = array("SIGCHLD" => SIGCHLD, "SIGINT" => SIGINT);
     /** @var array $signalQueue */
     public $signalQueue = array();
     /** @var WorkerDaemon $workerDaemon */
@@ -44,6 +44,10 @@ class SignalHandler
         }
     }
 
+    /**
+     * @param int|null $pid
+     * @param int|null $status
+     */
     private function sigchldCallback($pid = null, $status = null)
     {
         if (is_null($pid)) {

@@ -2,7 +2,10 @@
   "name": "ryancco/forker",
   "description": "Async processing via process forking",
   "type": "library",
-  "keywords": ["async", "forking"],
+  "keywords": [
+    "async",
+    "forking"
+  ],
   "license": "MIT",
   "authors": [
     {

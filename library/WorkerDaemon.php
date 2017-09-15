@@ -11,13 +11,13 @@ class WorkerDaemon
     /** @var int $maxRunTime */
     protected $maxRunTime;
     /** @var bool $jobInProgress */
-    public $jobInProgress;
+    protected $jobInProgress;
     /** @var SignalHandler $signalHandler */
     public $signalHandler;
     /** @var array $currentWorkers */
     public $currentWorkers = array();
     /** @var int $daemonPid */
-    private $daemonPid;
+    public $daemonPid;
 
 
     /**
@@ -43,7 +43,7 @@ class WorkerDaemon
         $this->jobInProgress = true;
         $startTime = time();
 
-        while (time() <= ($this->maxRunTime + $startTime) && $this->jobInProgress) {
+        while ((time() <= ($this->maxRunTime + $startTime)) && $this->jobInProgress) {
             while (count($this->currentWorkers) < $this->maxWorkers) {
                 $this->delegateJob($job);
             }
@@ -53,15 +53,13 @@ class WorkerDaemon
 
     public function terminateJob()
     {
-        if ($this->daemonPid == getmypid()) {
-            $this->jobInProgress = false;
-            foreach ($this->currentWorkers as $id => $pid) {
-                posix_kill($pid, SIGTERM);
-                pcntl_waitpid($pid, $status);
-                pcntl_wexitstatus($status);
-            }
+        $this->jobInProgress = false;
+
+        foreach ($this->currentWorkers as $pid) {
+            posix_kill($pid, SIGTERM);
+            pcntl_waitpid($pid, $status);
+            pcntl_wexitstatus($status);
         }
-        posix_kill(getmypid(), SIGTERM);
     }
 
     /**
@@ -82,16 +80,14 @@ class WorkerDaemon
                 break;
             case 0:
                 $job();
-                exit(0);
                 break;
             default:
                 $this->currentWorkers[] = $pid;
                 if (isset($this->signalHandler->signalQueue[$pid])) {
-                    $this->signalHandler->handle(SIGCHLD, $pid);
+                    $this->signalHandler->handle(SIGCHLD, $pid, $this->signalHandler->signalQueue[$pid]);
                     unset($this->signalHandler->signalQueue[$pid]);
                 }
                 break;
         }
-
     }
 }
