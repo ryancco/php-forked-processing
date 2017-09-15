@@ -47,7 +47,6 @@ class WorkerDaemon
             while (count($this->currentWorkers) < $this->maxWorkers) {
                 $this->delegateJob($job);
             }
-            pcntl_signal_dispatch();
         }
     }
 

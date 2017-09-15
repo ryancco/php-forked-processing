@@ -6,6 +6,7 @@ The below is a farcical example of creating and asynchronously processing a job 
 
 ```php
 <?php
+declare(ticks=1);
 
 require_once 'vendor/autoload.php';
 
