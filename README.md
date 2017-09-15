@@ -1,4 +1,7 @@
 ## php-forked-processing (forker)
+
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/36e4b65f1052459dbd85ea062187bcca)](https://www.codacy.com/app/ryancco/php-forked-processing?utm_source=github.com&utm_medium=referral&utm_content=ryancco/php-forked-processing&utm_campaign=badger)
+
 Asynchronous processing in PHP via process forking
 
 ## Example implementation
