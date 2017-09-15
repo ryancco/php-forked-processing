@@ -9,14 +9,15 @@ The below is a farcical example of creating and asynchronously processing a job 
 
 require_once 'vendor/autoload.php';
 
-use \ryancco\forker\WorkerDaemon;
-use \ryancco\forker\JobInterface;
+use ryancco\forker\JobInterface;
+use ryancco\forker\WorkerDaemon;
 
 class TestJob implements JobInterface
 {
     public function __invoke()
     {
-        for ($i = 1; $i <= 10; $i++) {
+        echo "New child spawned! [PID " . getmypid() . "]\n";
+        for ($i = 1; $i <= 5; $i++) {
             echo $this->formatOutput($i);
             sleep(10);
         }
@@ -26,11 +27,15 @@ class TestJob implements JobInterface
     {
         return "Pass #" . $loops . " [PID " . getmypid() . "]\n";
     }
+
+    public function __destruct()
+    {
+        echo "__destruct() [PID " . getmypid() . "]\n";
+    }
 }
 
-$wd = new WorkerDaemon(5, 600);
+$wd = new WorkerDaemon(5, 300);
 $wd->executeJob(new TestJob());
-
 ```
 
 ## License
