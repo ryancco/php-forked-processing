@@ -4,7 +4,7 @@ Asynchronous processing in PHP via process forking
 ## Example implementation
 The below is a farcical example of creating and asynchronously processing a job between 5 forked "child" processes for a total run time of 600 seconds as specified. Should a "child" process die, fail, or be completed before the 600 seconds, a new "child" process will be immediately spun up in it's place. Feel free to run this example and watch the terminal output while killing off and letting "child" processes finish their job.
 
-```$php
+```php
 <?php
 
 require_once 'vendor/autoload.php';
