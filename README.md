@@ -2,23 +2,30 @@
 Asynchronous processing in PHP via process forking
 
 ## Example
-The below is a farcical example of creating and asynchronously processing a job between 5 forked "child" processes for a total run time of 600 seconds as specified. Should a "child" process die, fail, or be completed before the 600 seconds, a new "child" process will be immediately spun up in it's place. Feel free to run this example and watch the terminal output while killing off and letting "child" processes finish their job.
+The below is a farcical example of creating and asynchronously processing a job between 5 forked "child" processes for a total run time of 300 seconds as specified. Should a "child" process die, fail, or be completed before the specified time, a new "child" process will be immediately spun up in it's place. Feel free to run this example and watch the terminal output while killing off and letting "child" processes finish their job.
 
 ```php
 <?php
-declare(ticks=1);
 
 require_once 'vendor/autoload.php';
 
 use ryancco\forker\JobInterface;
 use ryancco\forker\WorkerDaemon;
 
+declare(ticks=1); // PHP <= 5.6.*
+
 class TestJob implements JobInterface
 {
+    // Entry point for each child worker
     public function __invoke()
     {
         echo "New child spawned! [PID " . getmypid() . "]\n";
-        for ($i = 1; $i <= 5; $i++) {
+        $this->countTo(5);
+    }
+    
+    public function countTo($max = 5)
+    {
+        for ($i = 1; $i <= $max; $i++) {
             echo $this->formatOutput($i);
             sleep(10);
         }
@@ -29,6 +36,7 @@ class TestJob implements JobInterface
         return "Pass #" . $loops . " [PID " . getmypid() . "]\n";
     }
 
+    // Will be executed on every graceful exit
     public function __destruct()
     {
         echo "__destruct() [PID " . getmypid() . "]\n";
