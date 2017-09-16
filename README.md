@@ -16,7 +16,12 @@ declare(ticks=1); // PHP <= 5.6.*
 
 class TestJob implements JobInterface
 {
-    // Entry point for each child worker
+    /** @var array $loopsCounted */
+    private $loopsCounted = array();
+    
+    /**
+     * Entry point for each child worker
+     */
     public function __invoke()
     {
         echo "New child spawned! [PID " . getmypid() . "]\n";
@@ -29,17 +34,33 @@ class TestJob implements JobInterface
             echo $this->formatOutput($i);
             sleep(10);
         }
+        
+        $this->loopsCounted[$max] += 1;
     }
 
     private function formatOutput($loops)
     {
         return "Pass #" . $loops . " [PID " . getmypid() . "]\n";
     }
+    
+    private function recordLoopsCounted()
+    {
+        try {
+            $queue = new Queue(); // Does not exist
+        } catch (Exception $e) {
+            exit("Unable to instantiate new Queue: " . $e->getMessage());
+        }
+        $queue->push($this->loopsCounted);
+    }
 
-    // Will be executed on every graceful exit
+    /**
+     * Exit point for each child worker
+     * Make all of your garbage collection and stats recording calls here
+     */
     public function __destruct()
     {
         echo "__destruct() [PID " . getmypid() . "]\n";
+        $this->recordLoopsCounted();
     }
 }
 
