@@ -48,6 +48,7 @@ class WorkerDaemon
                 $this->delegateJob($job);
             }
         }
+        sleep(1);
     }
 
     public function terminateJob()
