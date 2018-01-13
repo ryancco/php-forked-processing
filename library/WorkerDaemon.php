@@ -47,8 +47,8 @@ class WorkerDaemon
             while (count($this->currentWorkers) < $this->maxWorkers) {
                 $this->delegateJob($job);
             }
+            sleep(1);
         }
-        sleep(1);
     }
 
     public function terminateJob()
