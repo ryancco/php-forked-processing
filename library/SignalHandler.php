@@ -17,12 +17,15 @@ class SignalHandler
      * SignalHandler constructor.
      *
      * @param WorkerDaemon $workerDaemon
+     * @throws SignalHandlerException
      */
     public function __construct(WorkerDaemon $workerDaemon)
     {
         $this->workerDaemon = $workerDaemon;
 
         $this->registerSignals();
+
+        $this->registerAsyncSignalHandling();
     }
 
     /**
@@ -72,6 +75,13 @@ class SignalHandler
             if (!pcntl_signal($int, array($this, "handle"))) {
                 throw new SignalHandlerException("Unable to register signal: {$str} ({$int})");
             }
+        }
+    }
+
+    private function registerAsyncSignalHandling()
+    {
+        if (PHP_VERSION_ID >= 70100) {
+            pcntl_async_signals(true);
         }
     }
 }
