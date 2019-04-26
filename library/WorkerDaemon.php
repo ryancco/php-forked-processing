@@ -37,6 +37,8 @@ class WorkerDaemon
 
     /**
      * @param JobInterface $job
+     * @throws Exceptions\SignalHandlerException
+     * @throws WorkerDaemonException
      */
     public function executeJob(JobInterface $job)
     {
@@ -44,10 +46,12 @@ class WorkerDaemon
         $startTime = time();
 
         while ((time() <= ($this->maxRunTime + $startTime)) && $this->jobInProgress) {
-            while (count($this->currentWorkers) < $this->maxWorkers) {
-                $this->delegateJob($job);
+            if (count($this->currentWorkers) < $this->maxWorkers) {
+                for ($instanceNumber = 1; $instanceNumber <= $this->maxWorkers; $instanceNumber++) {
+                    $this->delegateJob($job, $instanceNumber);
+                    sleep(1);
+                }
             }
-            sleep(1);
         }
     }
 
@@ -67,10 +71,12 @@ class WorkerDaemon
 
     /**
      * @param JobInterface $job
+     * @param $instanceNumber
      *
+     * @throws Exceptions\SignalHandlerException
      * @throws WorkerDaemonException
      */
-    private function delegateJob(JobInterface $job)
+    private function delegateJob(JobInterface $job, $instanceNumber)
     {
         try {
             $pid = pcntl_fork();
@@ -82,7 +88,7 @@ class WorkerDaemon
             case -1:
                 break;
             case 0:
-                $job();
+                $job($instanceNumber);
                 $this->terminateJob();
                 break;
             default:
